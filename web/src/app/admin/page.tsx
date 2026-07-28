@@ -160,12 +160,19 @@ export default function AdminDashboard() {
                     <td className="p-4">
                       <div className="flex items-center space-x-3">
                         <Link
-                          href={`/${item.content_type}s/${item.slug}`}
+                          href={item.content_type === "blog" ? `/blog/${item.slug}` : `/${item.content_type}s/${item.slug}`}
                           target="_blank"
                           className="p-1.5 text-muted hover:text-foreground transition rounded hover:bg-background"
                           title="View Live"
                         >
                           <Eye className="h-4 w-4" />
+                        </Link>
+                        <Link
+                          href={`/admin/content/edit/${item.id}`}
+                          className="p-1.5 text-muted hover:text-primary transition rounded hover:bg-background"
+                          title="Edit Content"
+                        >
+                          <Edit3 className="h-4 w-4" />
                         </Link>
                         <button
                           onClick={() => handleDelete(item.id)}

@@ -47,6 +47,12 @@ export default function Header() {
             <Sparkles className="h-4 w-4" />
             <span>AI Notice</span>
           </Link>
+          <Link
+            href="/login"
+            className="text-muted hover:text-primary transition border-l border-border pl-4"
+          >
+            Sign In
+          </Link>
         </nav>
 
         {/* Mobile Menu Button */}
@@ -82,6 +88,13 @@ export default function Header() {
             >
               <Sparkles className="h-4 w-4" />
               <span>AI Notice</span>
+            </Link>
+            <Link
+              href="/login"
+              className="block rounded-md px-3 py-2 text-base font-medium text-muted hover:bg-surface hover:text-primary transition"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Sign In
             </Link>
           </div>
         </div>

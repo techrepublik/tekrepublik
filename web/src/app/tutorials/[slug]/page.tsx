@@ -4,6 +4,8 @@ import { ArrowLeft, BookOpen, Calendar, Clock } from "lucide-react";
 import { fetchAPI } from "@/app/utils/api";
 import Markdown from "@/app/components/Markdown";
 
+import { cookies } from "next/headers";
+
 export const revalidate = 60; // ISR revalidation
 
 interface PageProps {
@@ -13,12 +15,18 @@ interface PageProps {
 export default async function TutorialDetail({ params }: PageProps) {
   const { slug } = await params;
 
+  let token = undefined;
+  try {
+    const cookieStore = await cookies();
+    token = cookieStore.get("access_token")?.value;
+  } catch (e) {}
+
   let tutorial = null;
   try {
-    const res = await fetchAPI(`/content/slug/${slug}`);
+    const res = await fetchAPI(`/content/slug/${slug}`, { token });
     tutorial = res.data;
   } catch (err: any) {
-    if (err.status !== 404) {
+    if (err.status !== 404 && err.status !== 403) {
       console.error("Failed to fetch tutorial detail:", err);
     }
   }
