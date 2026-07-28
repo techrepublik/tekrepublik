@@ -1,11 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Menu, X, Cpu, Sparkles } from "lucide-react";
+import { Menu, X, Cpu, Sparkles, Sun, Moon } from "lucide-react";
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+
+  useEffect(() => {
+    const isDark = document.documentElement.classList.contains("dark");
+    setTheme(isDark ? "dark" : "light");
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+    if (newTheme === "dark") {
+      document.documentElement.classList.add("dark");
+      document.documentElement.classList.remove("light");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.add("light");
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  };
 
   const navigation = [
     { name: "About", href: "/about" },
@@ -30,7 +50,7 @@ export default function Header() {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex space-x-6 text-sm font-medium">
+        <nav className="hidden md:flex space-x-6 text-sm font-medium items-center">
           {navigation.map((item) => (
             <Link
               key={item.name}
@@ -47,6 +67,13 @@ export default function Header() {
             <Sparkles className="h-4 w-4" />
             <span>AI Notice</span>
           </Link>
+          <button
+            onClick={toggleTheme}
+            className="p-1.5 text-muted hover:text-primary transition focus:outline-none bg-surface/50 border border-border/40 rounded-lg"
+            title="Toggle theme"
+          >
+            {theme === "dark" ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4" />}
+          </button>
           <Link
             href="/login"
             className="text-muted hover:text-primary transition border-l border-border pl-4"
@@ -70,7 +97,7 @@ export default function Header() {
       {/* Mobile Navigation Drawer */}
       {mobileMenuOpen && (
         <div className="md:hidden border-b border-border bg-background">
-          <div className="space-y-1 px-4 pb-4 pt-2">
+          <div className="space-y-2 px-4 pb-4 pt-2">
             {navigation.map((item) => (
               <Link
                 key={item.name}
@@ -89,6 +116,16 @@ export default function Header() {
               <Sparkles className="h-4 w-4" />
               <span>AI Notice</span>
             </Link>
+            <button
+              onClick={() => {
+                toggleTheme();
+                setMobileMenuOpen(false);
+              }}
+              className="flex w-full items-center space-x-2 rounded-md px-3 py-2 text-base font-medium text-muted hover:bg-surface hover:text-primary transition"
+            >
+              {theme === "dark" ? <Sun className="h-5 w-5 text-amber-400" /> : <Moon className="h-5 w-5" />}
+              <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
+            </button>
             <Link
               href="/login"
               className="block rounded-md px-3 py-2 text-base font-medium text-muted hover:bg-surface hover:text-primary transition"

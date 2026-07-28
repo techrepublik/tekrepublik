@@ -15,7 +15,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light) {
     --background: #090d16; /* dark navy slate */
     --foreground: #f1f5f9; /* slate-100 */
     --primary: #a78bfa;    /* purple-400 */
@@ -28,6 +28,20 @@
     --muted: #94a3b8;      /* slate-400 */
     --card: #111827;       /* gray-900 */
   }
+}
+
+html.dark {
+  --background: #090d16; /* dark navy slate */
+  --foreground: #f1f5f9; /* slate-100 */
+  --primary: #a78bfa;    /* purple-400 */
+  --primary-dark: #7c3aed; /* purple-600 */
+  --secondary: #34d399;  /* emerald-400 */
+  --secondary-dark: #059669;
+  --accent: #facc15;     /* yellow-400 */
+  --surface: #1e293b;    /* slate-800 */
+  --border: #334155;     /* slate-700 */
+  --muted: #94a3b8;      /* slate-400 */
+  --card: #111827;       /* gray-900 */
 }
 
 @theme inline {
@@ -68,11 +82,17 @@ body {
 }
 
 @media (prefers-color-scheme: dark) {
-  .glass-card {
+  html:not(.light) .glass-card {
     background: rgba(17, 24, 39, 0.6);
     backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.05);
   }
+}
+
+html.dark .glass-card {
+  background: rgba(17, 24, 39, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 /* Custom interactive hover effects */
