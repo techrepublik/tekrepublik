@@ -284,6 +284,10 @@ def create_content(
     db.add(revision)
     db.commit()
     
+    # Trigger content chunking for AI RAG matches
+    from app.core.tasks import chunk_content_item
+    chunk_content_item(db, item, content_in.body, 1)
+    
     return {
         "success": True,
         "data": {
@@ -343,6 +347,10 @@ def update_content(
     )
     db.add(revision)
     db.commit()
+    
+    # Trigger content chunking for AI RAG matches
+    from app.core.tasks import chunk_content_item
+    chunk_content_item(db, item, content_in.body, next_version)
     
     return {
         "success": True,
