@@ -40,7 +40,9 @@ def get_available_ollama_model() -> str:
             data = json.loads(response.read().decode("utf-8"))
             models = data.get("models", [])
             if models:
-                return models[0].get("name", DEFAULT_MODEL)
+                generation_models = [m for m in models if "embed" not in m.get("name", "").lower()]
+                if generation_models:
+                    return generation_models[0].get("name", DEFAULT_MODEL)
     except Exception:
         pass
     return DEFAULT_MODEL
@@ -187,7 +189,7 @@ def generate_assistant_reply(db: Session, conversation_id: uuid.UUID, user_messa
             headers={"Content-Type": "application/json"},
             method="POST"
         )
-        with urllib.request.urlopen(req, timeout=15.0) as response:
+        with urllib.request.urlopen(req, timeout=60.0) as response:
             res_data = json.loads(response.read().decode("utf-8"))
             assistant_reply = res_data.get("message", {}).get("content", assistant_reply)
             latency_seconds = (datetime.now() - start_time).total_seconds()
