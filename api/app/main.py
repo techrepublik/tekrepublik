@@ -33,9 +33,12 @@ app.add_middleware(
 api_router = APIRouter(prefix="/api/v1")
 
 # Import and include endpoint routers
-from app.api.v1 import auth, users
+from app.api.v1 import auth, users, taxonomy, content, media
 api_router.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 api_router.include_router(users.router, prefix="/users", tags=["Users"])
+api_router.include_router(taxonomy.router, prefix="/taxonomy", tags=["Taxonomy"])
+api_router.include_router(content.router, prefix="/content", tags=["Content"])
+api_router.include_router(media.router, prefix="/media", tags=["Media"])
 
 @api_router.get("/health", tags=["System"])
 def health_check():

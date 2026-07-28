@@ -73,6 +73,43 @@ def get_current_user(
         
     return user
 
+def get_token_optional(request: Request) -> Optional[str]:
+    """
+    Extract the JWT if present in headers or cookies, otherwise return None.
+    """
+    auth_header = request.headers.get("Authorization")
+    if auth_header and auth_header.startswith("Bearer "):
+        return auth_header.split(" ")[1]
+    
+    cookie_token = request.cookies.get("access_token")
+    if cookie_token:
+        return cookie_token
+        
+    return None
+
+def get_current_user_optional(
+    db: Session = Depends(get_db),
+    token: Optional[str] = Depends(get_token_optional)
+) -> Optional[User]:
+    """
+    Load the user if a valid token is provided, otherwise return None without throwing 401.
+    """
+    if not token:
+        return None
+    try:
+        payload = decode_token(token)
+        if not payload or payload.get("type") != "access":
+            return None
+        user_id = payload.get("sub")
+        if not user_id:
+            return None
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user or not user.is_active:
+            return None
+        return user
+    except Exception:
+        return None
+
 class PermissionChecker:
     """
     A class dependency that verifies if the current authenticated user's role
