@@ -191,6 +191,58 @@ def get_content_detail(content_id: uuid.UUID, db: Session = Depends(get_db), cur
         "error": None
     }
 
+@router.get("/slug/{slug}", response_model=None)
+def get_content_by_slug(
+    slug: str,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional)
+):
+    item = db.query(ContentItem).filter(ContentItem.slug == slug).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Content not found")
+        
+    # Access checks
+    is_cms_privileged = False
+    if current_user:
+        permission_names = [p.name for p in current_user.role.permissions]
+        if current_user.role.name == "Administrator" or "ai.cms.generate" in permission_names or "ai.cms.review" in permission_names:
+            is_cms_privileged = True
+            
+    if item.status != "published" and not is_cms_privileged:
+        raise HTTPException(status_code=403, detail="Forbidden: Content draft restricted")
+        
+    latest = get_latest_revision(db, item.id)
+    if not latest:
+        raise HTTPException(status_code=500, detail="Data inconsistency: Content has no revisions")
+        
+    # Revisions list
+    revisions = db.query(ContentRevision).filter(ContentRevision.content_id == item.id).order_by(ContentRevision.version.desc()).all()
+    
+    data = ContentDetailResponse(
+        id=item.id,
+        title=item.title,
+        slug=item.slug,
+        content_type=item.content_type,
+        status=item.status,
+        access_level=item.access_level,
+        created_at=item.created_at,
+        updated_at=item.updated_at,
+        author_id=item.author_id,
+        categories=[CategoryMini.model_validate(c) for c in item.categories],
+        tags=[TagMini.model_validate(t) for t in item.tags],
+        version=latest.version,
+        summary=latest.summary,
+        body=latest.body,
+        revisions=[RevisionResponse.model_validate(r) for r in revisions]
+    )
+    
+    return {
+        "success": True,
+        "data": data,
+        "meta": {},
+        "error": None
+    }
+
 @router.post("", response_model=None, status_code=status.HTTP_201_CREATED)
 def create_content(
     content_in: ContentCreate,

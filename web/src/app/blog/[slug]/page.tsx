@@ -1,5 +1,10 @@
 import Link from "next/link";
-import { ArrowLeft, MessageSquare } from "lucide-react";
+import { notFound } from "next/navigation";
+import { ArrowLeft, Calendar } from "lucide-react";
+import { fetchAPI } from "@/app/utils/api";
+import Markdown from "@/app/components/Markdown";
+
+export const revalidate = 60; // ISR revalidation
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -8,9 +13,30 @@ interface PageProps {
 export default async function BlogDetail({ params }: PageProps) {
   const { slug } = await params;
 
+  let blog = null;
+  try {
+    const res = await fetchAPI(`/content/slug/${slug}`);
+    blog = res.data;
+  } catch (err: any) {
+    if (err.status !== 404) {
+      console.error("Failed to fetch blog detail:", err);
+    }
+  }
+
+  if (!blog) {
+    notFound();
+  }
+
+  const formattedDate = new Date(blog.created_at).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
   return (
     <div className="py-16 sm:py-24 bg-background text-foreground">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+        {/* Back Link */}
         <Link
           href="/blog"
           className="inline-flex items-center space-x-2 text-xs font-semibold text-muted hover:text-primary mb-8 transition"
@@ -20,38 +46,42 @@ export default async function BlogDetail({ params }: PageProps) {
         </Link>
 
         <article className="space-y-6">
-          <div className="space-y-2">
-            <span className="text-xs font-bold text-primary uppercase tracking-widest">Blog Post</span>
-            <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-foreground">
-              {slug.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase())}
+          {/* Header Metadata */}
+          <div className="space-y-4">
+            <span className="inline-block text-xs font-bold text-primary bg-primary/10 rounded-full px-3 py-1">
+              {blog.tags?.[0]?.name || "Tech Reflection"}
+            </span>
+            <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-foreground leading-tight">
+              {blog.title}
             </h1>
-            <p className="text-sm text-muted">Published: July 2026 • By Joseph Lorilla</p>
+            <div className="flex items-center space-x-4 text-xs text-muted">
+              <span className="flex items-center">
+                <Calendar className="h-3.5 w-3.5 mr-1" />
+                {formattedDate}
+              </span>
+              <span>•</span>
+              <span>
+                Version {blog.version}
+              </span>
+            </div>
           </div>
 
+          {/* Author card info */}
           <div className="border-t border-b border-border/60 py-6 my-8 flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">JL</div>
+              <div className="h-9 w-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
+                JL
+              </div>
               <div>
                 <p className="text-xs font-bold">Joseph Lorilla</p>
-                <p className="text-[10px] text-muted">Professor & Blogger</p>
+                <p className="text-[10px] text-muted">Developer & Architect</p>
               </div>
             </div>
           </div>
 
-          {/* Dummy Content */}
-          <div className="space-y-6 leading-relaxed text-muted text-sm sm:text-base">
-            <p>
-              As a developer and instructor, I often get asked why I don't just use standard tools like WordPress or Ghost to run my platform. My answer always comes down to control and schema ownership.
-            </p>
-
-            <h2 className="text-xl font-bold text-foreground mt-8 mb-4">The Custom Schema Advantage</h2>
-            <p>
-              When building educational tools, I need relations mapping to link tutorials to resources, files, and AI templates directly. A monolithic engine makes custom databases difficult to format, whereas a simple FastAPI + PostgreSQL environment makes queries straightforward and highly reusable.
-            </p>
-
-            <p>
-              Furthermore, Decoupling our web client using Next.js means we can serve static pages globally, while keeping private API endpoints completely hidden behind Nginx reverse proxy gates.
-            </p>
+          {/* Render parsed Markdown body */}
+          <div className="markdown-body">
+            <Markdown content={blog.body} />
           </div>
         </article>
       </div>

@@ -1,30 +1,17 @@
 import Link from "next/link";
 import { BookOpen, Clock, ArrowRight } from "lucide-react";
+import { fetchAPI } from "@/app/utils/api";
 
-export default function Tutorials() {
-  const tutorials = [
-    {
-      title: "FastAPI Authentication with JWT and Argon2",
-      slug: "fastapi-auth-argon2",
-      description: "Learn to design a secure, database-backed REST API authentication pipeline in Python using JWT and Argon2.",
-      duration: "35 mins",
-      difficulty: "Intermediate",
-    },
-    {
-      title: "Next.js 15 App Router & Docker Compose Orchestration",
-      slug: "nextjs-docker-compose",
-      description: "Step-by-step blueprint to scaffold, containerize, and link Next.js frontends and FastAPI backends behind an Nginx proxy.",
-      duration: "45 mins",
-      difficulty: "Advanced",
-    },
-    {
-      title: "PostgreSQL Schema Modeling with UUIDs and Alembic",
-      slug: "postgres-uuid-alembic",
-      description: "Configure Alembic migrations database pipelines, establish models relations, and support UUID primary keys.",
-      duration: "25 mins",
-      difficulty: "Intermediate",
-    },
-  ];
+export const revalidate = 60; // Revalidate pages every 60 seconds (ISR)
+
+export default async function Tutorials() {
+  let tutorials = [];
+  try {
+    const payload = await fetchAPI("/content?content_type=tutorial");
+    tutorials = payload.data || [];
+  } catch (err) {
+    console.error("Failed to load tutorials:", err);
+  }
 
   return (
     <div className="py-16 sm:py-24 bg-background">
@@ -38,33 +25,43 @@ export default function Tutorials() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {tutorials.map((tut) => (
-            <div key={tut.slug} className="glass-card p-6 rounded-xl border border-border/60 flex flex-col justify-between hover-lift">
-              <div>
-                <div className="flex items-center justify-between text-xs font-semibold text-primary mb-4">
-                  <span className="bg-primary/10 rounded-full px-2.5 py-1">{tut.difficulty}</span>
-                  <span className="flex items-center text-muted">
-                    <Clock className="h-3.5 w-3.5 mr-1" />
-                    {tut.duration}
-                  </span>
+        {tutorials.length === 0 ? (
+          <div className="text-center p-12 text-muted text-sm border border-dashed border-border rounded-xl">
+            No tutorials published yet. Check back soon!
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {tutorials.map((tut: any) => (
+              <div key={tut.slug} className="glass-card p-6 rounded-xl border border-border/60 flex flex-col justify-between hover-lift">
+                <div>
+                  <div className="flex items-center justify-between text-xs font-semibold text-primary mb-4">
+                    <span className="bg-primary/10 rounded-full px-2.5 py-1">
+                      {tut.categories?.[0]?.name || "Guide"}
+                    </span>
+                    <span className="flex items-center text-muted">
+                      <Clock className="h-3.5 w-3.5 mr-1" />
+                      v{tut.version}
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground mb-2">{tut.title}</h3>
+                  <p className="text-sm text-muted mb-6 leading-relaxed">
+                    {tut.summary || "Start learning advanced backend development step-by-step."}
+                  </p>
                 </div>
-                <h3 className="text-xl font-bold text-foreground mb-2">{tut.title}</h3>
-                <p className="text-sm text-muted mb-6 leading-relaxed">{tut.description}</p>
-              </div>
 
-              <div className="border-t border-border/60 pt-4">
-                <Link
-                  href={`/tutorials/${tut.slug}`}
-                  className="inline-flex items-center text-xs font-semibold text-primary hover:underline"
-                >
-                  <span>Start Reading</span>
-                  <ArrowRight className="h-3 w-3 ml-1" />
-                </Link>
+                <div className="border-t border-border/60 pt-4">
+                  <Link
+                    href={`/tutorials/${tut.slug}`}
+                    className="inline-flex items-center text-xs font-semibold text-primary hover:underline"
+                  >
+                    <span>Start Reading</span>
+                    <ArrowRight className="h-3 w-3 ml-1" />
+                  </Link>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

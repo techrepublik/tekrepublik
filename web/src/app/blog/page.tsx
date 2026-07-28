@@ -1,23 +1,17 @@
 import Link from "next/link";
-import { MessageSquare, Calendar, ArrowRight } from "lucide-react";
+import { Calendar, ArrowRight } from "lucide-react";
+import { fetchAPI } from "@/app/utils/api";
 
-export default function Blog() {
-  const blogs = [
-    {
-      title: "Why I Bootstrap My Own CMS Instead of Using WordPress",
-      slug: "why-bootstrap-custom-cms",
-      description: "A developer's reflection on control, speed, Docker networks, API reuse for Flutter, and the power of custom schema ownership.",
-      date: "July 2026",
-      readTime: "8 mins read",
-    },
-    {
-      title: "Local LLM Inference vs. API Providers: A Developer's Practical Audit",
-      slug: "local-llm-vs-api-providers",
-      description: "Comparing Ollama running llama3 locally on Mac hardware versus hosted OpenAI/Gemini endpoints on latency and cost.",
-      date: "May 2026",
-      readTime: "12 mins read",
-    },
-  ];
+export const revalidate = 60; // ISR revalidation
+
+export default async function Blog() {
+  let blogs = [];
+  try {
+    const payload = await fetchAPI("/content?content_type=blog");
+    blogs = payload.data || [];
+  } catch (err) {
+    console.error("Failed to load blog posts:", err);
+  }
 
   return (
     <div className="py-16 sm:py-24 bg-background">
@@ -31,36 +25,45 @@ export default function Blog() {
           </p>
         </div>
 
-        <div className="space-y-8 max-w-4xl">
-          {blogs.map((post) => (
-            <article key={post.slug} className="glass-card p-6 sm:p-8 rounded-2xl border border-border/60 flex flex-col justify-between hover-lift">
-              <div>
-                <div className="flex items-center space-x-4 text-xs text-muted mb-3 font-semibold">
-                  <span className="flex items-center">
-                    <Calendar className="h-3.5 w-3.5 mr-1" />
-                    {post.date}
-                  </span>
-                  <span>•</span>
-                  <span>{post.readTime}</span>
+        {blogs.length === 0 ? (
+          <div className="text-center p-12 text-muted text-sm border border-dashed border-border rounded-xl">
+            No blog posts published yet. Check back soon!
+          </div>
+        ) : (
+          <div className="space-y-8 max-w-4xl">
+            {blogs.map((post: any) => (
+              <article key={post.slug} className="glass-card p-6 sm:p-8 rounded-2xl border border-border/60 flex flex-col justify-between hover-lift">
+                <div>
+                  <div className="flex items-center space-x-4 text-xs text-muted mb-3 font-semibold">
+                    <span className="bg-primary/10 text-primary px-2.5 py-0.5 rounded-full uppercase tracking-wider text-[10px]">
+                      {post.tags?.[0]?.name || "Reflection"}
+                    </span>
+                    <span>•</span>
+                    <span className="flex items-center">
+                      Version {post.version}
+                    </span>
+                  </div>
+                  <h3 className="text-2xl font-bold text-foreground mb-3 hover:text-primary transition-colors">
+                    <Link href={`/blog/${post.slug}`}>{post.title}</Link>
+                  </h3>
+                  <p className="text-sm text-muted mb-4 leading-relaxed">
+                    {post.summary || "Read Joseph Lorilla's developer reflections."}
+                  </p>
                 </div>
-                <h3 className="text-2xl font-bold text-foreground mb-3 hover:text-primary transition-colors">
-                  <Link href={`/blog/${post.slug}`}>{post.title}</Link>
-                </h3>
-                <p className="text-sm text-muted mb-4 leading-relaxed">{post.description}</p>
-              </div>
 
-              <div className="pt-2">
-                <Link
-                  href={`/blog/${post.slug}`}
-                  className="inline-flex items-center text-xs font-semibold text-primary hover:underline"
-                >
-                  <span>Continue Reading</span>
-                  <ArrowRight className="h-3 w-3 ml-1" />
-                </Link>
-              </div>
-            </article>
-          ))}
-        </div>
+                <div className="pt-2">
+                  <Link
+                    href={`/blog/${post.slug}`}
+                    className="inline-flex items-center text-xs font-semibold text-primary hover:underline"
+                  >
+                    <span>Continue Reading</span>
+                    <ArrowRight className="h-3 w-3 ml-1" />
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

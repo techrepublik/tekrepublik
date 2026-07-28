@@ -1,5 +1,10 @@
 import Link from "next/link";
-import { ArrowLeft, Sparkles, Terminal } from "lucide-react";
+import { notFound } from "next/navigation";
+import { ArrowLeft, BookOpen, Calendar, Clock } from "lucide-react";
+import { fetchAPI } from "@/app/utils/api";
+import Markdown from "@/app/components/Markdown";
+
+export const revalidate = 60; // ISR revalidation
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -8,9 +13,30 @@ interface PageProps {
 export default async function TutorialDetail({ params }: PageProps) {
   const { slug } = await params;
 
+  let tutorial = null;
+  try {
+    const res = await fetchAPI(`/content/slug/${slug}`);
+    tutorial = res.data;
+  } catch (err: any) {
+    if (err.status !== 404) {
+      console.error("Failed to fetch tutorial detail:", err);
+    }
+  }
+
+  if (!tutorial) {
+    notFound();
+  }
+
+  const formattedDate = new Date(tutorial.created_at).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
   return (
     <div className="py-16 sm:py-24 bg-background text-foreground">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+        {/* Back Link */}
         <Link
           href="/tutorials"
           className="inline-flex items-center space-x-2 text-xs font-semibold text-muted hover:text-primary mb-8 transition"
@@ -20,17 +46,33 @@ export default async function TutorialDetail({ params }: PageProps) {
         </Link>
 
         <article className="space-y-6">
-          <div className="space-y-2">
-            <span className="text-xs font-bold text-secondary uppercase tracking-widest">Tutorial Guide</span>
-            <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-foreground">
-              Dynamic Tutorial: {slug.replace(/-/g, " ")}
+          {/* Header Metadata */}
+          <div className="space-y-4">
+            <span className="inline-block text-xs font-bold text-primary bg-primary/10 rounded-full px-3 py-1">
+              {tutorial.categories?.[0]?.name || "Programming"}
+            </span>
+            <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-foreground leading-tight">
+              {tutorial.title}
             </h1>
-            <p className="text-sm text-muted">Published: July 2026 • By Joseph Lorilla</p>
+            <div className="flex items-center space-x-4 text-xs text-muted">
+              <span className="flex items-center">
+                <Calendar className="h-3.5 w-3.5 mr-1" />
+                {formattedDate}
+              </span>
+              <span>•</span>
+              <span className="flex items-center">
+                <Clock className="h-3.5 w-3.5 mr-1" />
+                Revision v{tutorial.version}
+              </span>
+            </div>
           </div>
 
+          {/* Author info & Ask section */}
           <div className="border-t border-b border-border/60 py-6 my-8 flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">JL</div>
+              <div className="h-9 w-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
+                JL
+              </div>
               <div>
                 <p className="text-xs font-bold">Joseph Lorilla</p>
                 <p className="text-[10px] text-muted">Professor & Architect</p>
@@ -44,31 +86,9 @@ export default async function TutorialDetail({ params }: PageProps) {
             </Link>
           </div>
 
-          {/* Dummy Markdown Content */}
-          <div className="space-y-6 leading-relaxed text-muted text-sm sm:text-base">
-            <p>
-              Welcome to this step-by-step engineering tutorial. In this guide, we decompose the architectural foundations of modern digital systems.
-            </p>
-
-            <h2 className="text-xl font-bold text-foreground mt-8 mb-4">1. Architectural Blueprint</h2>
-            <p>
-              To construct a highly modular service, we separate logic into distinct layout sections: presentation, routing endpoint dependencies, database schema models, and orchestration.
-            </p>
-
-            {/* Code Block visual */}
-            <div className="rounded-xl border border-border bg-card p-4 font-mono text-xs text-muted/90 overflow-x-auto my-6">
-              <div className="flex items-center justify-between border-b border-border/60 pb-2 mb-3 text-[10px] uppercase tracking-wider">
-                <span className="flex items-center"><Terminal className="h-3.5 w-3.5 mr-1" /> terminal</span>
-                <span>bash</span>
-              </div>
-              <p className="text-secondary"># Run compose cluster in detached daemon mode</p>
-              <p>&gt; docker compose up --build -d</p>
-            </div>
-
-            <h2 className="text-xl font-bold text-foreground mt-8 mb-4">2. Summary & Takeaways</h2>
-            <p>
-              By containerizing backend endpoints behind Nginx proxy routes, we establish clean, secure networks that resolve DNS conflicts and support direct websocket updates.
-            </p>
+          {/* Render parsed Markdown body */}
+          <div className="markdown-body">
+            <Markdown content={tutorial.body} />
           </div>
         </article>
       </div>
