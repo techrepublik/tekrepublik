@@ -1,12 +1,8 @@
 import uuid
-import hashlib
 from app.db.session import SessionLocal
 from app.models.user import Role, Permission, User, Profile
 from app.models.ai import AIProvider, AIModel, AIPromptTemplate
-
-def get_password_hash(password: str) -> str:
-    # Development placeholder hash
-    return hashlib.sha256(password.encode()).hexdigest()
+from app.core.security import get_password_hash
 
 def seed_db():
     db = SessionLocal()
