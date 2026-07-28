@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LayoutDashboard, FileText, Image as ImageIcon, Settings, LogOut, Globe, FolderTree, Menu, X, Cpu } from "lucide-react";
+import { LayoutDashboard, FileText, Image as ImageIcon, Settings, LogOut, Globe, FolderTree, Menu, X, Cpu, CreditCard } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -52,6 +52,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: "New Content", href: "/admin/content/new", icon: FileText },
     { name: "Taxonomy", href: "/admin/taxonomy", icon: FolderTree },
     { name: "Media Assets", href: "/admin/media", icon: ImageIcon },
+    { name: "Checkout Review", href: "/admin/orders", icon: CreditCard },
   ];
 
   if (loading) {
