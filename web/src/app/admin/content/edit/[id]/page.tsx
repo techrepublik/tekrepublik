@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, CheckCircle2, Edit3, Save, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import ContentBodyEditor from "@/app/components/ContentBodyEditor";
 
 export default function EditContent() {
   const router = useRouter();
@@ -139,7 +140,7 @@ export default function EditContent() {
   }
 
   return (
-    <div className="space-y-6 max-w-4xl font-sans">
+    <div className="space-y-6 max-w-7xl font-sans">
       {/* Header */}
       <div className="flex items-center space-x-4">
         <Link href="/admin" className="p-2 text-muted hover:text-foreground transition bg-surface rounded-lg border border-border/60">
@@ -200,18 +201,14 @@ export default function EditContent() {
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-2 flex justify-between">
-                <span>Markdown Body Content</span>
-                <span className="text-[10px] text-muted normal-case font-mono">Supports standard MD / HTML formatting</span>
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold text-muted uppercase tracking-wider">
+                Body Content (Markdown & HTML)
               </label>
-              <textarea
-                required
+              <ContentBodyEditor
                 value={body}
-                onChange={(e) => setBody(e.target.value)}
-                rows={12}
-                className="w-full rounded-lg border border-border bg-background px-4 py-3 text-sm focus:border-primary focus:outline-none text-foreground font-mono resize-y"
-                placeholder="## Heading 1&#10;Write the markdown documentation here..."
+                onChange={setBody}
+                placeholder="Write in Markdown or HTML formatting..."
               />
             </div>
           </div>
