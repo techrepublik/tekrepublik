@@ -140,7 +140,7 @@ export default function EditContent() {
   }
 
   return (
-    <div className="space-y-4 max-w-7xl font-sans">
+    <div className="space-y-4 w-full max-w-none font-sans">
       {/* Header */}
       <div className="flex items-center space-x-3">
         <Link href="/admin" className="p-1.5 text-muted hover:text-foreground transition bg-surface rounded-lg border border-border/60">

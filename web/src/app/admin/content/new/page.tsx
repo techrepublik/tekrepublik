@@ -99,7 +99,7 @@ export default function NewContent() {
   };
 
   return (
-    <div className="space-y-4 max-w-7xl">
+    <div className="space-y-4 w-full max-w-none">
       {/* Header */}
       <div className="flex items-center space-x-3">
         <Link href="/admin" className="p-1.5 text-muted hover:text-foreground transition bg-surface rounded-lg border border-border/60">
