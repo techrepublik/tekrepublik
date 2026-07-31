@@ -10,23 +10,23 @@ export function renderMarkdownToHtml(md: string): string {
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;");
     return `
-      <pre class="my-4 p-4 bg-slate-900 text-slate-100 rounded-xl overflow-x-auto font-mono text-xs border border-border/60 relative group">
-        <div class="flex items-center justify-between border-b border-slate-700/60 pb-1.5 mb-2 text-[10px] uppercase text-slate-400 font-sans tracking-wide">
-          <span>${lang || "code"}</span>
-          <button type="button" class="copy-code-btn p-1 hover:text-foreground text-muted transition rounded hover:bg-background cursor-pointer" title="Copy code">
+      <pre class="my-1.5 p-2 bg-slate-950 text-slate-200 rounded-md overflow-x-auto font-mono text-[10px] leading-normal border border-border/30 relative group">
+        <div class="flex items-center justify-between pb-0 mb-0.5 text-[8px] leading-none uppercase text-slate-500 font-sans tracking-wider select-none">
+          <span class="leading-none">${lang || "code"}</span>
+          <button type="button" class="copy-code-btn px-1 py-0.5 hover:text-foreground text-slate-400 transition rounded hover:bg-slate-800 cursor-pointer text-[7.5px] leading-none" title="Copy code">
             Copy
           </button>
         </div>
-        <code>${escapedCode}</code>
+        <code class="font-mono text-[10px] leading-normal block py-0.5">${escapedCode}</code>
       </pre>
     `.trim();
   });
 
   // 2. Headings (ensure we parse multiline correctly)
-  html = html.replace(/^#### (.*$)/gim, '<h4 class="text-md font-bold text-foreground mt-4 mb-2">$1</h4>');
-  html = html.replace(/^### (.*$)/gim, '<h3 class="text-lg font-bold text-foreground mt-6 mb-3">$1</h3>');
-  html = html.replace(/^## (.*$)/gim, '<h2 class="text-xl font-bold text-foreground mt-8 mb-4 border-b border-border/50 pb-2">$1</h2>');
-  html = html.replace(/^# (.*$)/gim, '<h1 class="text-2xl font-extrabold tracking-tight text-foreground mt-8 mb-4">$1</h1>');
+  html = html.replace(/^#### (.*$)/gim, '<h4 class="text-[10.5px] font-bold text-foreground mt-2 mb-0.5">$1</h4>');
+  html = html.replace(/^### (.*$)/gim, '<h3 class="text-[11.5px] font-bold text-foreground mt-2.5 mb-0.5">$1</h3>');
+  html = html.replace(/^## (.*$)/gim, '<h2 class="text-[12.5px] font-bold text-foreground mt-3 mb-1 border-b border-border/30 pb-0.5">$1</h2>');
+  html = html.replace(/^# (.*$)/gim, '<h1 class="text-sm font-extrabold tracking-tight text-foreground mt-3.5 mb-1.5">$1</h1>');
 
   // 3. Blockquotes
   html = html.replace(/^\> (.*$)/gim, '<blockquote class="border-l-4 border-primary bg-primary/5 pl-4 py-2.5 my-4 text-muted italic rounded-r-lg">$1</blockquote>');
