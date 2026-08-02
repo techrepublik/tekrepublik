@@ -11,13 +11,14 @@ export function renderMarkdownToHtml(md: string): string {
       .replace(/>/g, "&gt;");
     return `
       <pre class="my-1.5 p-2 bg-slate-950 text-slate-200 rounded-md overflow-x-auto font-mono text-[10px] leading-normal border border-border/30 relative group">
-        <div class="flex items-center justify-between pb-0 mb-0.5 text-[8px] leading-none uppercase text-slate-500 font-sans tracking-wider select-none">
-          <span class="leading-none">${lang || "code"}</span>
-          <button type="button" class="copy-code-btn px-1 py-0.5 hover:text-foreground text-slate-400 transition rounded hover:bg-slate-800 cursor-pointer text-[7.5px] leading-none" title="Copy code">
+        <div class="absolute right-1.5 top-1.5 flex items-center space-x-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150 select-none bg-slate-900/90 border border-slate-800/80 px-1.5 py-0.5 rounded text-[8px] font-sans">
+          <span class="uppercase text-slate-500 tracking-wider font-semibold">${lang || "code"}</span>
+          <span class="text-slate-800">|</span>
+          <button type="button" class="copy-code-btn hover:text-foreground text-slate-400 transition cursor-pointer text-[7.5px] leading-none" title="Copy code">
             Copy
           </button>
         </div>
-        <code class="font-mono text-[10px] leading-normal block py-0.5">${escapedCode}</code>
+        <code class="font-mono text-[10px] leading-normal block">${escapedCode}</code>
       </pre>
     `.trim();
   });
