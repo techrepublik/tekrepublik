@@ -1,3 +1,105 @@
+function parseMarkdownTables(text: string): string {
+  const lines = text.split("\n");
+  const result: string[] = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    // Check if line looks like a table row: starts with | and ends with |
+    if (trimmed.startsWith("|") && trimmed.endsWith("|") && i + 1 < lines.length) {
+      const nextLine = lines[i + 1].trim();
+      
+      // Check if next line is a table divider: starts/ends with | and only contains pipes, dashes, colons, spaces
+      const isDivider = nextLine.startsWith("|") && nextLine.endsWith("|") && /^[|:\-\s]+$/.test(nextLine);
+
+      if (isDivider) {
+        const headerRow = line;
+        const dividerRow = nextLine;
+        const bodyRows: string[] = [];
+        
+        // Parse column alignments
+        const alignments = dividerRow
+          .split("|")
+          .slice(1, -1)
+          .map(col => {
+            const trimmedCol = col.trim();
+            const alignLeft = trimmedCol.startsWith(":");
+            const alignRight = trimmedCol.endsWith(":");
+            if (alignLeft && alignRight) return "center";
+            if (alignRight) return "right";
+            return "left";
+          });
+
+        // Parse header texts
+        const headers = headerRow
+          .split("|")
+          .slice(1, -1)
+          .map(h => h.trim());
+
+        i += 2; // skip header and divider
+
+        // Read following rows until we exit table structure
+        while (i < lines.length) {
+          const bodyLine = lines[i].trim();
+          if (bodyLine.startsWith("|") && bodyLine.endsWith("|")) {
+            bodyRows.push(bodyLine);
+            i++;
+          } else {
+            break;
+          }
+        }
+
+        // Generate highly professional HTML table structure
+        let tableHtml = `<div class="overflow-x-auto my-5 rounded-lg border border-border/40 shadow-sm bg-card">
+  <table class="w-full text-left text-xs md:text-sm border-collapse">
+    <thead>
+      <tr class="border-b border-border/50 bg-muted/15 text-muted font-bold select-none">`;
+        
+        headers.forEach((header, index) => {
+          const align = alignments[index] || "left";
+          const alignClass = align === "center" ? "text-center" : align === "right" ? "text-right" : "text-left";
+          tableHtml += `\n        <th class="p-2.5 font-semibold ${alignClass}">${header}</th>`;
+        });
+        
+        tableHtml += `\n      </tr>
+    </thead>
+    <tbody class="divide-y divide-border/30">`;
+
+        bodyRows.forEach(row => {
+          const cells = row
+            .split("|")
+            .slice(1, -1)
+            .map(c => c.trim());
+          
+          tableHtml += `\n      <tr class="hover:bg-muted/5 transition-colors duration-100">`;
+          
+          for (let j = 0; j < headers.length; j++) {
+            const cellVal = cells[j] || "";
+            const align = alignments[j] || "left";
+            const alignClass = align === "center" ? "text-center" : align === "right" ? "text-right" : "text-left";
+            tableHtml += `\n        <td class="p-2.5 text-muted ${alignClass}">${cellVal}</td>`;
+          }
+          tableHtml += `\n      </tr>`;
+        });
+
+        tableHtml += `\n    </tbody>
+  </table>
+</div>`;
+
+        result.push(tableHtml);
+        continue;
+      }
+    }
+
+    result.push(line);
+    i++;
+  }
+
+  return result.join("\n");
+}
+
 export function renderMarkdownToHtml(md: string): string {
   if (!md) return "";
 
@@ -22,6 +124,9 @@ export function renderMarkdownToHtml(md: string): string {
       </pre>
     `.trim();
   });
+
+  // 1.5. Table parsing
+  html = parseMarkdownTables(html);
 
   // 2. Headings (ensure we parse multiline correctly)
   html = html.replace(/^#### (.*$)/gim, '<h4 class="text-[10.5px] font-bold text-foreground mt-2 mb-0.5">$1</h4>');
