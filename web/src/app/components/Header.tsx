@@ -8,10 +8,37 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("light");
 
+  const [user, setUser] = useState<any>(null);
+
   useEffect(() => {
     const isDark = document.documentElement.classList.contains("dark");
     setTheme(isDark ? "dark" : "light");
+
+    async function checkUser() {
+      try {
+        const res = await fetch("/api/v1/users/me");
+        if (res.ok) {
+          const payload = await res.json();
+          if (payload.success) {
+            setUser(payload.data);
+          }
+        }
+      } catch (err) {
+        // Not logged in
+      }
+    }
+    checkUser();
   }, []);
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/v1/auth/logout", { method: "POST" });
+      setUser(null);
+      if (window.location.pathname.startsWith("/admin")) {
+        window.location.href = "/";
+      }
+    } catch (err) {}
+  };
 
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
@@ -74,12 +101,35 @@ export default function Header() {
           >
             {theme === "dark" ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4" />}
           </button>
-          <Link
-            href="/login"
-            className="text-muted hover:text-primary transition border-l border-border pl-4"
-          >
-            Sign In
-          </Link>
+          
+          {user ? (
+            <div className="flex items-center space-x-3 border-l border-border pl-4">
+              <span className="text-xs text-muted max-w-[120px] truncate font-medium" title={user.email}>
+                {user.profile?.first_name || user.email.split("@")[0]}
+              </span>
+              {(user.role?.name === "Administrator" || user.role?.name === "Editor" || user.role?.name === "Author") && (
+                <Link
+                  href="/admin"
+                  className="text-xs bg-primary/10 text-primary hover:bg-primary/20 px-2 py-1 rounded font-semibold transition"
+                >
+                  CMS
+                </Link>
+              )}
+              <button
+                onClick={handleLogout}
+                className="text-xs text-red-500 hover:text-red-600 transition font-medium cursor-pointer"
+              >
+                Log Out
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className="text-muted hover:text-primary transition border-l border-border pl-4"
+            >
+              Sign In
+            </Link>
+          )}
         </nav>
 
         {/* Mobile Menu Button */}
@@ -126,13 +176,42 @@ export default function Header() {
               {theme === "dark" ? <Sun className="h-5 w-5 text-amber-400" /> : <Moon className="h-5 w-5" />}
               <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
             </button>
-            <Link
-              href="/login"
-              className="block rounded-md px-3 py-2 text-base font-medium text-muted hover:bg-surface hover:text-primary transition"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Sign In
-            </Link>
+            {user ? (
+              <div className="border-t border-border pt-2 mt-2 space-y-1">
+                <div className="flex items-center space-x-2 px-3 py-2 text-xs font-semibold text-muted">
+                  <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center text-[10px] text-primary">
+                    {user.email[0].toUpperCase()}
+                  </div>
+                  <span className="truncate">{user.profile?.first_name || user.email}</span>
+                </div>
+                {(user.role?.name === "Administrator" || user.role?.name === "Editor" || user.role?.name === "Author") && (
+                  <Link
+                    href="/admin"
+                    className="block rounded-md px-3 py-2 text-base font-medium text-primary hover:bg-surface transition"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    CMS Dashboard
+                  </Link>
+                )}
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="flex w-full items-center rounded-md px-3 py-2 text-base font-medium text-red-500 hover:bg-surface transition cursor-pointer text-left"
+                >
+                  Log Out
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="block rounded-md px-3 py-2 text-base font-medium text-muted hover:bg-surface hover:text-primary transition"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Sign In
+              </Link>
+            )}
           </div>
         </div>
       )}
