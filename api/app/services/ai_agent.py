@@ -12,7 +12,7 @@ from app.core.tasks import get_embedding
 
 OLLAMA_CHAT_URL = "http://ollama:11434/api/chat"
 OLLAMA_MODELS_URL = "http://ollama:11434/api/tags"
-DEFAULT_MODEL = "llama3"
+DEFAULT_MODEL = "llama3.2:1b"
 
 # --- Cosine Similarity Helpers ---
 def dot_product(v1: List[float], v2: List[float]) -> float:
@@ -32,11 +32,11 @@ def cosine_similarity(v1: List[float], v2: List[float]) -> float:
 def get_available_ollama_model() -> str:
     """
     Fetch the list of installed models from Ollama to pick an active one.
-    Falls back to 'llama3' or 'mistral' if requests fail.
+    Falls back to 'llama3.2:1b' or 'mistral' if requests fail.
     """
     try:
         req = urllib.request.Request(OLLAMA_MODELS_URL, method="GET")
-        with urllib.request.urlopen(req, timeout=2.0) as response:
+        with urllib.request.urlopen(req, timeout=4.0) as response:
             data = json.loads(response.read().decode("utf-8"))
             models = data.get("models", [])
             if models:
