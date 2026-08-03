@@ -173,10 +173,10 @@ export function renderMarkdownToHtml(md: string): string {
         inOrdered = false;
       }
       if (!inBullet) {
-        processedLines.push('<ul class="my-3 pl-1 space-y-1.5 text-muted text-sm md:text-base list-none">');
+        processedLines.push('<ul>');
         inBullet = true;
       }
-      processedLines.push(`<li class="relative pl-4 before:absolute before:left-0 before:top-[7.5px] before:h-1.5 before:w-1.5 before:rounded-full before:bg-primary before:content-[\'\'] hover:text-foreground transition-colors duration-100">${bulletMatch[3]}</li>`);
+      processedLines.push(`<li>${bulletMatch[3]}</li>`);
       continue;
     }
 
@@ -187,10 +187,10 @@ export function renderMarkdownToHtml(md: string): string {
         inBullet = false;
       }
       if (!inOrdered) {
-        processedLines.push('<ol class="list-decimal pl-6 my-3 space-y-1.5 text-muted text-sm md:text-base">');
+        processedLines.push('<ol>');
         inOrdered = true;
       }
-      processedLines.push(`<li class="hover:text-foreground transition-colors duration-100 pl-1">${orderedMatch[3]}</li>`);
+      processedLines.push(`<li>${orderedMatch[3]}</li>`);
       continue;
     }
 
