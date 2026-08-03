@@ -147,11 +147,11 @@ export function renderMarkdownToHtml(md: string): string {
   html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary font-medium hover:underline inline-flex items-center" target="_blank" rel="noopener noreferrer">$1</a>');
 
   // 7. Bold
-  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
 
   // 8. Italic
-  html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-  html = html.replace(/_([^_]+)_/g, '<em>$1</em>');
+  html = html.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+  html = html.replace(/_([^\n_]+)_/g, '<em>$1</em>');
 
   // 9. Inline code
   html = html.replace(/`([^`]+)`/g, '<code class="px-1.5 py-0.5 bg-muted/20 text-primary-dark dark:text-primary font-mono text-xs rounded border border-border/40">$1</code>');
