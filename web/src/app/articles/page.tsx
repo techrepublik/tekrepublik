@@ -1,6 +1,5 @@
-import Link from "next/link";
-import { GraduationCap, Calendar, ArrowRight } from "lucide-react";
 import { fetchAPI } from "@/app/utils/api";
+import ContentFilterList from "@/app/components/ContentFilterList";
 
 export const revalidate = 60; // ISR revalidation
 
@@ -30,36 +29,7 @@ export default async function Articles() {
             No research articles published yet. Check back soon!
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {articles.map((art: any) => (
-              <div key={art.slug} className="glass-card p-8 rounded-xl border border-border/60 flex flex-col justify-between hover-lift">
-                <div>
-                  <div className="flex items-center justify-between text-xs font-semibold text-secondary mb-4">
-                    <span className="bg-secondary/10 rounded-full px-2.5 py-1">
-                      {art.categories?.[0]?.name || "Research"}
-                    </span>
-                    <span className="flex items-center text-muted">
-                      v{art.version}
-                    </span>
-                  </div>
-                  <h3 className="text-2xl font-bold text-foreground mb-2">{art.title}</h3>
-                  <p className="text-sm text-muted mb-6 leading-relaxed">
-                    {art.summary || "Explore research reports and systems engineering evaluations."}
-                  </p>
-                </div>
-
-                <div className="border-t border-border/60 pt-4">
-                  <Link
-                    href={`/articles/${art.slug}`}
-                    className="inline-flex items-center text-xs font-semibold text-secondary hover:underline"
-                  >
-                    <span>Read Article</span>
-                    <ArrowRight className="h-3 w-3 ml-1" />
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
+          <ContentFilterList items={articles} contentType="article" />
         )}
       </div>
     </div>

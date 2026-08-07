@@ -1,6 +1,5 @@
-import Link from "next/link";
-import { BookOpen, Clock, ArrowRight } from "lucide-react";
 import { fetchAPI } from "@/app/utils/api";
+import ContentFilterList from "@/app/components/ContentFilterList";
 
 export const revalidate = 60; // Revalidate pages every 60 seconds (ISR)
 
@@ -30,37 +29,7 @@ export default async function Tutorials() {
             No tutorials published yet. Check back soon!
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {tutorials.map((tut: any) => (
-              <div key={tut.slug} className="glass-card p-6 rounded-xl border border-border/60 flex flex-col justify-between hover-lift">
-                <div>
-                  <div className="flex items-center justify-between text-xs font-semibold text-primary mb-4">
-                    <span className="bg-primary/10 rounded-full px-2.5 py-1">
-                      {tut.categories?.[0]?.name || "Guide"}
-                    </span>
-                    <span className="flex items-center text-muted">
-                      <Clock className="h-3.5 w-3.5 mr-1" />
-                      v{tut.version}
-                    </span>
-                  </div>
-                  <h3 className="text-xl font-bold text-foreground mb-2">{tut.title}</h3>
-                  <p className="text-sm text-muted mb-6 leading-relaxed">
-                    {tut.summary || "Start learning advanced backend development step-by-step."}
-                  </p>
-                </div>
-
-                <div className="border-t border-border/60 pt-4">
-                  <Link
-                    href={`/tutorials/${tut.slug}`}
-                    className="inline-flex items-center text-xs font-semibold text-primary hover:underline"
-                  >
-                    <span>Start Reading</span>
-                    <ArrowRight className="h-3 w-3 ml-1" />
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
+          <ContentFilterList items={tutorials} contentType="tutorial" />
         )}
       </div>
     </div>
