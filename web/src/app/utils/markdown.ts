@@ -104,25 +104,40 @@ export function renderMarkdownToHtml(md: string): string {
   if (!md) return "";
 
   let html = md;
+  const codeBlocks: string[] = [];
+  const inlineCodes: string[] = [];
 
-  // 1. Code blocks (do first to avoid double parsing)
-  html = html.replace(/```(\w*)\n([\s\S]*?)\n```/g, (match, lang, code) => {
+  // 1. Extract code blocks (do first to avoid double parsing and markdown formatting corruption)
+  html = html.replace(/```(\w*)\r?\n([\s\S]*?)\r?\n```/g, (match, lang, code) => {
+    const index = codeBlocks.length;
     const escapedCode = code
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;");
-    return `
-      <pre class="my-1.5 p-2 bg-slate-950 text-slate-200 rounded-md overflow-x-auto font-mono text-[10px] leading-normal border border-border/30 relative group">
-        <div class="absolute right-1.5 top-1.5 flex items-center space-x-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150 select-none bg-slate-900/90 border border-slate-800/80 px-1.5 py-0.5 rounded text-[8px] font-sans">
-          <span class="uppercase text-slate-500 tracking-wider font-semibold">${lang || "code"}</span>
-          <span class="text-slate-800">|</span>
-          <button type="button" class="copy-code-btn hover:text-foreground text-slate-400 transition cursor-pointer text-[7.5px] leading-none" title="Copy code">
-            Copy
-          </button>
-        </div>
-        <code class="font-mono text-[10px] leading-normal block">${escapedCode}</code>
-      </pre>
-    `.trim();
+
+    const blockHtml = `<div class="code-block-container my-4 rounded-xl border border-border/30 bg-slate-950 overflow-hidden shadow-lg group relative">` +
+      `<div class="flex items-center justify-between px-4 py-2 bg-slate-900 border-b border-border/20 select-none">` +
+        `<span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-sans">${lang || "code"}</span>` +
+        `<button type="button" class="copy-code-btn flex items-center space-x-1.5 text-slate-400 hover:text-slate-200 transition-colors duration-150 cursor-pointer text-[10px] font-sans py-0.5 px-1.5 rounded hover:bg-slate-800/50" title="Copy code">` +
+          `<svg class="copy-icon w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">` +
+            `<path stroke-linecap="round" stroke-linejoin="round" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />` +
+          `</svg>` +
+          `<span class="btn-text">Copy</span>` +
+        `</button>` +
+      `</div>` +
+      `<pre class="p-4 overflow-x-auto font-mono text-xs md:text-sm leading-relaxed text-slate-200"><code class="font-mono block select-text">${escapedCode}</code></pre>` +
+    `</div>`;
+
+    codeBlocks.push(blockHtml);
+    return `\n{CODEBLOCKPLACEHOLDER${index}}\n`;
+  });
+
+  // 1.2. Extract inline code (so formatting rules like italics, bold, links, lists do not affect inline code)
+  html = html.replace(/`([^`]+)`/g, (match, code) => {
+    const index = inlineCodes.length;
+    const inlineHtml = `<code class="px-1.5 py-0.5 bg-muted/20 text-primary-dark dark:text-primary font-mono text-xs rounded border border-border/40">${code}</code>`;
+    inlineCodes.push(inlineHtml);
+    return `{INLINECODEPLACEHOLDER${index}}`;
   });
 
   // 1.5. Table parsing
@@ -153,10 +168,7 @@ export function renderMarkdownToHtml(md: string): string {
   html = html.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
   html = html.replace(/_([^\n_]+)_/g, '<em>$1</em>');
 
-  // 9. Inline code
-  html = html.replace(/`([^`]+)`/g, '<code class="px-1.5 py-0.5 bg-muted/20 text-primary-dark dark:text-primary font-mono text-xs rounded border border-border/40">$1</code>');
-
-  // 10. Lists grouping
+  // 9. Lists grouping
   const lines = html.split("\n");
   let inBullet = false;
   let inOrdered = false;
@@ -187,10 +199,10 @@ export function renderMarkdownToHtml(md: string): string {
         inBullet = false;
       }
       if (!inOrdered) {
-        processedLines.push('<ol>');
+        processedLines.push('<ol class="list-none pl-0 my-3 space-y-1.5">');
         inOrdered = true;
       }
-      processedLines.push(`<li>${orderedMatch[3]}</li>`);
+      processedLines.push(`<li class="flex items-start space-x-2 text-muted text-sm md:text-base"><span class="font-mono text-xs md:text-sm text-muted/80 select-none w-7 shrink-0 text-right pr-1">${orderedMatch[2]}.</span><span>${orderedMatch[3]}</span></li>`);
       continue;
     }
 
@@ -208,9 +220,11 @@ export function renderMarkdownToHtml(md: string): string {
     if (trimmed === "") {
       processedLines.push("");
     } else {
-      // Wrap normal lines in paragraph unless it starts with a block tag
+      // Wrap normal lines in paragraph unless it starts with a block tag or is a placeholder
       const startsWithHtmlBlock = /^\s*<(\/?)(div|p|blockquote|pre|h1|h2|h3|h4|h5|h6|ul|ol|li|table|tr|td|thead|tbody|th|hr|img|a)\b/i.test(trimmed);
-      if (!startsWithHtmlBlock && !trimmed.startsWith("</") && !trimmed.endsWith(">")) {
+      const isPlaceholder = trimmed.startsWith("{CODEBLOCKPLACEHOLDER");
+      
+      if (!startsWithHtmlBlock && !isPlaceholder && !trimmed.startsWith("</") && !trimmed.endsWith(">")) {
         processedLines.push(`<p class="my-3 leading-relaxed text-muted text-sm md:text-base">${trimmed}</p>`);
       } else {
         processedLines.push(line);
@@ -221,5 +235,17 @@ export function renderMarkdownToHtml(md: string): string {
   if (inBullet) processedLines.push("</ul>");
   if (inOrdered) processedLines.push("</ol>");
 
-  return processedLines.join("\n");
+  let result = processedLines.join("\n");
+
+  // 10. Restore inline code blocks
+  inlineCodes.forEach((inlineHtml, index) => {
+    result = result.split(`{INLINECODEPLACEHOLDER${index}}`).join(inlineHtml);
+  });
+
+  // 11. Restore code blocks
+  codeBlocks.forEach((blockHtml, index) => {
+    result = result.split(`{CODEBLOCKPLACEHOLDER${index}}`).join(blockHtml);
+  });
+
+  return result;
 }

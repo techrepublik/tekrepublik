@@ -15,7 +15,10 @@ export default function Markdown({ content }: MarkdownProps) {
     const button = (e.target as HTMLElement).closest(".copy-code-btn") as HTMLButtonElement | null;
     if (!button) return;
 
-    const pre = button.closest("pre");
+    const container = button.closest(".code-block-container");
+    if (!container) return;
+
+    const pre = container.querySelector("pre");
     if (!pre) return;
 
     const codeEl = pre.querySelector("code");
@@ -23,14 +26,17 @@ export default function Markdown({ content }: MarkdownProps) {
 
     navigator.clipboard.writeText(codeEl.textContent || "");
 
-    const originalText = button.innerHTML;
-    button.innerHTML = "Copied!";
-    button.classList.add("text-secondary");
-    
-    setTimeout(() => {
-      button.innerHTML = originalText;
-      button.classList.remove("text-secondary");
-    }, 2000);
+    const btnText = button.querySelector(".btn-text");
+    if (btnText) {
+      const originalText = btnText.textContent || "Copy";
+      btnText.textContent = "Copied!";
+      button.classList.add("text-secondary");
+      
+      setTimeout(() => {
+        btnText.textContent = originalText;
+        button.classList.remove("text-secondary");
+      }, 2000);
+    }
   };
 
   return (
