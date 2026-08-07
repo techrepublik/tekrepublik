@@ -433,7 +433,7 @@ function CommentNode({
                   }}
                   className="flex items-center space-x-1 hover:text-primary transition font-medium cursor-pointer"
                 >
-                  <Edit2 className="h-3 w-3" />
+                  <Edit2 className="h-3.5 w-3.5" />
                   <span>Edit</span>
                 </button>
               )}
@@ -443,7 +443,7 @@ function CommentNode({
                   onClick={() => onDeleteComment(comment.id)}
                   className="flex items-center space-x-1 hover:text-red-500 transition font-medium text-red-500/80 cursor-pointer"
                 >
-                  <Trash2 className="h-3 w-3" />
+                  <Trash2 className="h-3.5 w-3.5" />
                   <span>Delete</span>
                 </button>
               )}
@@ -581,6 +581,9 @@ export default function CommentSection({ contentId }: CommentSectionProps) {
   
   // Shared reply selection state (keeps only one reply form active at a time)
   const [replyingToId, setReplyingToId] = useState<string | null>(null);
+  
+  // Custom premium modal delete state
+  const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
   
   // Lightbox modal state for image enlargement
   const [enlargedImageUrl, setEnlargedImageUrl] = useState<string | null>(null);
@@ -847,8 +850,6 @@ export default function CommentSection({ contentId }: CommentSectionProps) {
 
   // Delete comment
   const handleDeleteComment = async (commentId: string) => {
-    if (!confirm("Are you sure you want to delete this comment?")) return;
-
     try {
       const res = await fetch(`/api/v1/comments/${commentId}`, {
         method: "DELETE",
@@ -1018,7 +1019,7 @@ export default function CommentSection({ contentId }: CommentSectionProps) {
               replyingToId={replyingToId}
               setReplyingToId={setReplyingToId}
               onPostReply={handlePostReply}
-              onDeleteComment={handleDeleteComment}
+              onDeleteComment={setDeletingCommentId}
               onEditComment={handleEditComment}
               onImageEnlarge={setEnlargedImageUrl}
               onRateComment={handleRateComment}
@@ -1028,6 +1029,57 @@ export default function CommentSection({ contentId }: CommentSectionProps) {
       ) : (
         <div className="py-10 text-center text-muted/50 text-xs font-medium border border-dashed border-border/40 rounded-xl bg-surface/10">
           No comments yet. Be the first to start the discussion!
+        </div>
+      )}
+
+      {/* Custom Professional Delete Confirmation Modal Overlay */}
+      {deletingCommentId && (
+        <div
+          onClick={() => setDeletingCommentId(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-all duration-200 cursor-default px-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md rounded-lg border border-neutral-200 bg-white p-6 shadow-2xl space-y-4 hover-lift text-left"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-sm text-neutral-900">Delete Comment</h3>
+              <button
+                onClick={() => setDeletingCommentId(null)}
+                className="text-neutral-400 hover:text-neutral-600 p-1 rounded-md transition duration-150 cursor-pointer"
+                aria-label="Close modal"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            
+            {/* Body */}
+            <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed">
+              Are you sure you want to delete this comment? This action cannot be undone and will permanently remove this comment from the discussion thread.
+            </p>
+            
+            {/* Actions (Right-aligned) */}
+            <div className="flex items-center justify-end space-x-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeletingCommentId(null)}
+                className="px-4 py-2 border border-neutral-200 hover:bg-neutral-50 rounded-md text-xs font-semibold text-neutral-600 hover:text-neutral-950 transition duration-150 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  handleDeleteComment(deletingCommentId);
+                  setDeletingCommentId(null);
+                }}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md text-xs font-semibold transition duration-150 cursor-pointer shadow-sm"
+              >
+                Delete Comment
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
