@@ -49,6 +49,7 @@ class ContentItem(Base):
     categories: Mapped[list["Category"]] = relationship("Category", secondary=content_categories)
     tags: Mapped[list["Tag"]] = relationship("Tag", secondary=content_tags)
     revisions: Mapped[list["ContentRevision"]] = relationship("ContentRevision", back_populates="content_item", cascade="all, delete-orphan")
+    comments: Mapped[list["Comment"]] = relationship("Comment", back_populates="content_item", cascade="all, delete-orphan")
 
 class ContentRevision(Base):
     __tablename__ = "content_revisions"

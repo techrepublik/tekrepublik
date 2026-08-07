@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, Calendar } from "lucide-react";
 import { fetchAPI } from "@/app/utils/api";
 import Markdown from "@/app/components/Markdown";
+import CommentSection from "@/app/components/CommentSection";
 
 import { cookies } from "next/headers";
 
@@ -92,6 +93,9 @@ export default async function BlogDetail({ params }: PageProps) {
             <Markdown content={blog.body} />
           </div>
         </article>
+
+        {/* Comment section */}
+        <CommentSection contentId={blog.id} />
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, BookOpen, Calendar, Clock } from "lucide-react";
 import { fetchAPI } from "@/app/utils/api";
 import Markdown from "@/app/components/Markdown";
+import CommentSection from "@/app/components/CommentSection";
 
 import { cookies } from "next/headers";
 
@@ -99,6 +100,9 @@ export default async function TutorialDetail({ params }: PageProps) {
             <Markdown content={tutorial.body} />
           </div>
         </article>
+
+        {/* Comment section */}
+        <CommentSection contentId={tutorial.id} />
       </div>
     </div>
   );
