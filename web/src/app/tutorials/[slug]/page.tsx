@@ -76,8 +76,8 @@ export default async function TutorialDetail({ params }: PageProps) {
             </div>
           </div>
 
-          {/* Author info & Ask section */}
-          <div className="border-t border-b border-border/60 py-6 my-8 flex items-center justify-between">
+          {/* Author info section */}
+          <div className="border-t border-b border-border/60 py-6 my-8 flex items-center">
             <div className="flex items-center space-x-3">
               <div className="h-9 w-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
                 JL
@@ -87,12 +87,6 @@ export default async function TutorialDetail({ params }: PageProps) {
                 <p className="text-[10px] text-muted">Professor & Architect</p>
               </div>
             </div>
-            <Link
-              href="/contact"
-              className="rounded-md border border-border px-3 py-1.5 text-xs font-semibold hover:bg-surface text-muted hover:text-foreground transition"
-            >
-              Ask a Question
-            </Link>
           </div>
 
           {/* Render parsed Markdown body */}
