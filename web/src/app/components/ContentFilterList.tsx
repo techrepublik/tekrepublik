@@ -28,9 +28,16 @@ interface ContentItem {
 interface ContentFilterListProps {
   items: ContentItem[];
   contentType: "tutorial" | "article" | "blog" | "project";
+  title: string;
+  description: string;
 }
 
-export default function ContentFilterList({ items, contentType }: ContentFilterListProps) {
+export default function ContentFilterList({
+  items,
+  contentType,
+  title,
+  description,
+}: ContentFilterListProps) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
@@ -60,105 +67,120 @@ export default function ContentFilterList({ items, contentType }: ContentFilterL
 
   return (
     <div className="space-y-8 font-sans">
-      {/* Clean, professional filter section wrapper */}
-      <div className="bg-surface/30 border border-border/40 rounded-xl p-4 sm:p-5 space-y-4">
-        {/* Categories Row */}
-        {categories.length > 0 && (
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-            <span className="text-[10px] uppercase tracking-wider font-bold text-muted select-none w-20 shrink-0">
-              Categories
-            </span>
-            <div className="flex flex-wrap gap-1.5">
-              <button
-                type="button"
-                onClick={() => setSelectedCategory(null)}
-                className={`px-3 py-1 text-xs font-semibold rounded-full border transition cursor-pointer ${
-                  selectedCategory === null
-                    ? "bg-primary/10 border-primary text-primary"
-                    : "border-border/60 hover:bg-surface text-muted hover:text-foreground"
-                }`}
-              >
-                All
-              </button>
-              {categories.map((cat) => (
+      {/* Header and Filter Layout Grid */}
+      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8 mb-16">
+        {/* Left Side: Page Title and Description */}
+        <div className="max-w-2xl space-y-4">
+          <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl text-foreground">
+            {title}
+          </h1>
+          <p className="text-base sm:text-lg text-muted leading-relaxed">
+            {description}
+          </p>
+        </div>
+
+        {/* Right Side: Clean Filters Container (aligned with the red box location) */}
+        <div className="w-full lg:max-w-md shrink-0">
+          <div className="bg-surface/30 border border-border/40 rounded-xl p-4 sm:p-5 space-y-4 shadow-sm">
+            {/* Categories Selection */}
+            {categories.length > 0 && (
+              <div className="space-y-2">
+                <span className="text-[10px] uppercase tracking-wider font-bold text-muted select-none block">
+                  Categories
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedCategory(null)}
+                    className={`px-2.5 py-0.5 text-xs font-semibold rounded-full border transition cursor-pointer ${
+                      selectedCategory === null
+                        ? "bg-primary/10 border-primary text-primary"
+                        : "border-border/60 hover:bg-surface text-muted hover:text-foreground"
+                    }`}
+                  >
+                    All
+                  </button>
+                  {categories.map((cat) => (
+                    <button
+                      type="button"
+                      key={cat.slug}
+                      onClick={() => setSelectedCategory(cat.slug)}
+                      className={`px-2.5 py-0.5 text-xs font-semibold rounded-full border transition cursor-pointer ${
+                        selectedCategory === cat.slug
+                          ? "bg-primary/10 border-primary text-primary"
+                          : "border-border/60 hover:bg-surface text-muted hover:text-foreground"
+                      }`}
+                    >
+                      {cat.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Divider if both exist */}
+            {categories.length > 0 && tags.length > 0 && (
+              <div className="border-t border-border/20 my-2" />
+            )}
+
+            {/* Tags Selection */}
+            {tags.length > 0 && (
+              <div className="space-y-2">
+                <span className="text-[10px] uppercase tracking-wider font-bold text-muted select-none block">
+                  Tags
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedTag(null)}
+                    className={`px-2 py-0.5 rounded border text-[10px] font-mono transition cursor-pointer ${
+                      selectedTag === null
+                        ? "bg-muted/10 border-muted text-muted font-bold"
+                        : "border-border/50 hover:bg-surface text-muted/80 hover:text-foreground"
+                    }`}
+                  >
+                    #all
+                  </button>
+                  {tags.map((tag) => (
+                    <button
+                      type="button"
+                      key={tag.slug}
+                      onClick={() => setSelectedTag(tag.slug)}
+                      className={`px-2 py-0.5 rounded border text-[10px] font-mono transition cursor-pointer ${
+                        selectedTag === tag.slug
+                          ? "bg-primary/10 border-primary text-primary font-bold"
+                          : "border-border/50 hover:bg-surface text-muted/80 hover:text-foreground"
+                      }`}
+                    >
+                      #{tag.slug}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Active Filters Clear/Meta Row */}
+            {(selectedCategory || selectedTag) && (
+              <div className="flex items-center justify-between text-[11px] text-muted border-t border-border/20 pt-3 select-none">
+                <div>
+                  Showing <span className="font-semibold text-foreground">{filteredItems.length}</span> of{" "}
+                  <span className="font-semibold text-foreground">{items.length}</span>
+                </div>
                 <button
                   type="button"
-                  key={cat.slug}
-                  onClick={() => setSelectedCategory(cat.slug)}
-                  className={`px-3 py-1 text-xs font-semibold rounded-full border transition cursor-pointer ${
-                    selectedCategory === cat.slug
-                      ? "bg-primary/10 border-primary text-primary"
-                      : "border-border/60 hover:bg-surface text-muted hover:text-foreground"
-                  }`}
+                  onClick={() => {
+                    setSelectedCategory(null);
+                    setSelectedTag(null);
+                  }}
+                  className="text-red-500 hover:text-red-600 font-semibold cursor-pointer transition flex items-center space-x-1"
                 >
-                  {cat.name}
+                  <X className="h-3.5 w-3.5" />
+                  <span>Clear Filters</span>
                 </button>
-              ))}
-            </div>
+              </div>
+            )}
           </div>
-        )}
-
-        {/* Divider if both exist */}
-        {categories.length > 0 && tags.length > 0 && (
-          <div className="border-t border-border/30" />
-        )}
-
-        {/* Tags Row */}
-        {tags.length > 0 && (
-          <div className="flex flex-col sm:flex-row sm:items-start gap-2">
-            <span className="text-[10px] uppercase tracking-wider font-bold text-muted select-none w-20 shrink-0 pt-1.5">
-              Tags
-            </span>
-            <div className="flex flex-wrap gap-1.5">
-              <button
-                type="button"
-                onClick={() => setSelectedTag(null)}
-                className={`px-2.5 py-0.5 rounded border text-[11px] font-mono transition cursor-pointer ${
-                  selectedTag === null
-                    ? "bg-muted/10 border-muted text-muted font-bold"
-                    : "border-border/50 hover:bg-surface text-muted/80 hover:text-foreground"
-                }`}
-              >
-                #all
-              </button>
-              {tags.map((tag) => (
-                <button
-                  type="button"
-                  key={tag.slug}
-                  onClick={() => setSelectedTag(tag.slug)}
-                  className={`px-2.5 py-0.5 rounded border text-[11px] font-mono transition cursor-pointer ${
-                    selectedTag === tag.slug
-                      ? "bg-primary/10 border-primary text-primary font-bold"
-                      : "border-border/50 hover:bg-surface text-muted/80 hover:text-foreground"
-                  }`}
-                >
-                  #{tag.slug}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Filter State Meta Footer: Results details and Clear button */}
-        {(selectedCategory || selectedTag) && (
-          <div className="flex items-center justify-between text-[11px] text-muted border-t border-border/30 pt-3 select-none">
-            <div>
-              Showing <span className="font-semibold text-foreground">{filteredItems.length}</span> of{" "}
-              <span className="font-semibold text-foreground">{items.length}</span> items
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedCategory(null);
-                setSelectedTag(null);
-              }}
-              className="text-red-500 hover:text-red-600 font-semibold cursor-pointer transition flex items-center space-x-1"
-            >
-              <X className="h-3.5 w-3.5" />
-              <span>Clear Filters</span>
-            </button>
-          </div>
-        )}
+        </div>
       </div>
 
       {/* Grid/List Rendering based on Type */}
